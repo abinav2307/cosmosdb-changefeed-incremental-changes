@@ -20,9 +20,24 @@ namespace Microsoft.CosmosDB.ChangeFeedTest
     {
         private DocumentClient DocumentClient;
 
+        /// <summary>
+        /// Azure Cosmos DB account endpoint
+        /// </summary>
         private string AccountEndpoint;
+
+        /// <summary>
+        /// Account Key to access the Cosmos DB account
+        /// </summary>
         private string AccountKey;
+
+        /// <summary>
+        /// Name of the Cosmos DB database
+        /// </summary>
         private string DatabaseName;
+
+        /// <summary>
+        /// Name of the Cosmos DB collection
+        /// </summary>
         private string CollectionName;
 
         public ChangeFeedWithOpLogTester()
@@ -43,6 +58,14 @@ namespace Microsoft.CosmosDB.ChangeFeedTest
                 });
         }
 
+        /// <summary>
+        /// This method performs the following actions to highlight incremental changes fetched from ChangeFeed
+        /// 1. Creates or re-creates the collection with the specified name
+        /// 2. Replaces the RetentionDuration as part of the ChangeFeedPolicy associated with the collection
+        /// 3. Inserts a document, upserts the same document a specified number of times, and finally deletes the document
+        /// 4. Runs ChangeFeed to capture all the changes from (3)
+        /// </summary>
+        /// <returns></returns>
         public async Task RunChangeFeedWithOpLogTest()
         {
             // 1. Create a new collection
@@ -52,12 +75,16 @@ namespace Microsoft.CosmosDB.ChangeFeedTest
             await this.ReplaceDocumentCollectionAsync(this.DatabaseName, this.CollectionName);
 
             // 3. Insert 1 document and update the document as many times as specified
-            await this.InsertDocumentsAndExecuteChangeFeed();
+            await this.InsertUpsertAndDeleteDocument();
 
             // 4. Run ChangeFeed test with OpLog
             await this.ExecuteChangeFeedWithOpLog();
         }
 
+        /// <summary>
+        /// Executes ChangeFeed on the specified collection to capture incremental changes provided by ChangeFeed
+        /// </summary>
+        /// <returns></returns>
         private async Task ExecuteChangeFeedWithOpLog()
         {
             Console.WriteLine("Waiting 20 seconds prior to executing ChangeFeed");
@@ -89,7 +116,14 @@ namespace Microsoft.CosmosDB.ChangeFeedTest
             }
         }
 
-        private async Task InsertDocumentsAndExecuteChangeFeed()
+        /// <summary>
+        /// This method performs the following actions:
+        /// 1. Creates and inserts a new document into the Cosmos DB collection
+        /// 2. Upserts the same document a specified number of times
+        /// 3. Deletes the document
+        /// </summary>
+        /// <returns></returns>
+        private async Task InsertUpsertAndDeleteDocument()
         {
             // Insert 1 document and update the same document 10 times
             Person person = GetSampleDocument();
@@ -140,6 +174,13 @@ namespace Microsoft.CosmosDB.ChangeFeedTest
             }
         }
 
+        /// <summary>
+        /// Creates a new collection with the specified name or re-creates the collection if it already exists
+        /// </summary>
+        /// <param name="databaseId">Name of the Cosmos DB database within which to create or re-create the collection</param>
+        /// <param name="collectionId">Name of the Cosmos DB collection to create or re-create</param>
+        /// <param name="deleteExistingColl">Flag indicating whether or not to delete an exisitng collection</param>
+        /// <returns></returns>
         private async Task CreateDocumentCollectionAsync(
             string databaseId,
             string collectionId,
@@ -214,6 +255,12 @@ namespace Microsoft.CosmosDB.ChangeFeedTest
             Console.WriteLine("Successfully created the collection\n");
         }
 
+        /// <summary>
+        /// Replaces the RetentionDuration of the ChangeFeedPolicy associated with the Cosmos DB collection
+        /// </summary>
+        /// <param name="databaseId">>Name of the Cosmos DB database</param>
+        /// <param name="collectionId">Name of the Cosmos DB collection</param>
+        /// <returns></returns>
         private async Task ReplaceDocumentCollectionAsync(
             string databaseId,
             string collectionId)
@@ -237,6 +284,10 @@ namespace Microsoft.CosmosDB.ChangeFeedTest
             }
         }
 
+        /// <summary>
+        /// Generates a sample POCO to insert into Cosmos DB as a document
+        /// </summary>
+        /// <returns></returns>
         private Person GetSampleDocument()
         {
             Person person = new Person();

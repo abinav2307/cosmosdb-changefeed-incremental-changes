@@ -8,6 +8,9 @@ using Newtonsoft.Json;
 
 namespace Microsoft.CosmosDB.ChangeFeedTest
 {
+    /// <summary>
+    /// POCO for generating a sample document to insert, update and delete in Azure Cosmos DB
+    /// </summary>
     internal sealed class Person
     {
         [JsonProperty(PropertyName = "firstName")]
